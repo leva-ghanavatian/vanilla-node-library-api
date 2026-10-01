@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["server.js", "configs/**/*.js", "controllers/**/*.js", "helpers/**/*.js", "models/**/*.js"],
+  "exclude": ["node_modules"]
+}
