@@ -1,5 +1,4 @@
 const DB = require("../configs/db");
-const { toObjectId } = require("../helpers/ids");
 const { ConflictError } = require("../helpers/errors");
 const bcrypt = require("bcrypt");
 
@@ -42,9 +41,9 @@ const find = async ({ page = 1, limit = 20 } = {}) => {
 };
 
 // Returns null when not found
-const findById = async id => {
+const findById = async _id => {
     const users = await getCollection();
-    return users.findOne({ _id: toObjectId(id) }, HIDE_HASH);
+    return users.findOne({ _id }, HIDE_HASH);
 };
 
 // Returns the user (without passwordHash) when the credentials match, else null.
@@ -79,10 +78,10 @@ const create = async ({ name, username, email, password }) => {
     }
 };
 
-const modify = async (id, fields) => {
+const modify = async (_id, fields) => {
     const users = await getCollection();
     return users.findOneAndUpdate(
-        { _id: toObjectId(id) },
+        { _id },
         { $set: { ...fields, updatedAt: new Date() } },
         { returnDocument: "after", ...HIDE_HASH }
     );

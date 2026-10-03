@@ -1,16 +1,13 @@
 const rentModel = require("../models/Rent");
 const rentService = require("../services/rentService");
-const rentFilters = require("../validators/rent");
+const rentInput = require("../validators/rent");
 const {
-    sendJson, getRequiredParam, getQuery, getPagination, handleError
+    sendJson, getRequiredParam, getQuery, handleError
 } = require("../helpers/utils");
 
 const getAllRents = async (req, res) => {
     try {
-        const rents = await rentModel.find({
-            ...getPagination(req),
-            ...rentFilters.parseFilters(getQuery(req))
-        });
+        const rents = await rentModel.find(rentInput.parseFilters(getQuery(req)));
         sendJson(res, 200, rents);
     } catch (error) {
         handleError(res, error);
@@ -19,8 +16,10 @@ const getAllRents = async (req, res) => {
 
 const rentBook = async (req, res) => {
     try {
-        const userId = getRequiredParam(req, "userId");
-        const bookId = getRequiredParam(req, "bookId");
+        const { userId, bookId } = rentInput.parseRentIds({
+            userId: getRequiredParam(req, "userId"),
+            bookId: getRequiredParam(req, "bookId")
+        });
         sendJson(res, 201, await rentService.rentBook(userId, bookId));
     } catch (error) {
         handleError(res, error);
@@ -29,7 +28,7 @@ const rentBook = async (req, res) => {
 
 const returnBook = async (req, res) => {
     try {
-        const bookId = getRequiredParam(req, "bookId");
+        const { bookId } = rentInput.parseBookId({ bookId: getRequiredParam(req, "bookId") });
         sendJson(res, 200, await rentService.returnBook(bookId));
     } catch (error) {
         handleError(res, error);

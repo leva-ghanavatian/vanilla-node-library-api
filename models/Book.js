@@ -1,5 +1,4 @@
 const DB = require("../configs/db");
-const { toObjectId } = require("../helpers/ids");
 const { ConflictError } = require("../helpers/errors");
 
 const getCollection = async () => (await DB.getDb()).collection("books");
@@ -42,9 +41,9 @@ const find = async ({ page = 1, limit = 20 } = {}) => {
         .toArray();
 };
 
-const findById = async id => {
+const findById = async _id => {
     const books = await getCollection();
-    return books.findOne({ _id: toObjectId(id) });
+    return books.findOne({ _id });
 };
 
 // Expects already-validated input (see validators/book.js).
@@ -62,11 +61,11 @@ const create = async ({ title, author, price }) => {
 
 // Expects already-validated, non-empty changes.
 // Returns the full updated book, or null when not found.
-const update = async (id, changes) => {
+const update = async (_id, changes) => {
     const books = await getCollection();
     try {
         return await books.findOneAndUpdate(
-            { _id: toObjectId(id) },
+            { _id },
             { $set: { ...changes, updatedAt: new Date() } },
             { returnDocument: "after" }
         );
@@ -77,9 +76,8 @@ const update = async (id, changes) => {
 
 // Returns the deleted book, null when not found,
 // throws ConflictError when the book exists but is rented.
-const remove = async id => {
+const remove = async _id => {
     const books = await getCollection();
-    const _id = toObjectId(id);
     const deleted = await books.findOneAndDelete({ _id, free: 1 });
     return deleted ?? conflictOrNull(books, _id, "Book is currently rented and cannot be deleted");
 };
@@ -87,9 +85,8 @@ const remove = async id => {
 // Atomic state change: succeeds only if the book is currently in the `from`
 // state, so two concurrent requests can never both win.
 // Returns the updated book, or null when it doesn't exist or is not in `from`.
-const transition = async (id, from, to, conflictMessage) => {
+const transition = async (_id, from, to, conflictMessage) => {
     const books = await getCollection();
-    const _id = toObjectId(id);
     const book = await books.findOneAndUpdate(
         { _id, free: from },
         { $set: { free: to, updatedAt: new Date() } },

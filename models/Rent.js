@@ -1,5 +1,4 @@
 const DB = require("../configs/db");
-const { toObjectId } = require("../helpers/ids");
 const { ConflictError } = require("../helpers/errors");
 
 const getCollection = async () => (await DB.getDb()).collection("rents");
@@ -26,8 +25,8 @@ const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
     const rents = await getCollection();
 
     const filter = {};
-    if (userId) filter.userId = toObjectId(userId);
-    if (bookId) filter.bookId = toObjectId(bookId);
+    if (userId) filter.userId = userId;
+    if (bookId) filter.bookId = bookId;
     if (active !== undefined) filter.active = active;
 
     return rents
@@ -41,8 +40,8 @@ const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
 const create = async ({ userId, bookId }) => {
     const rents = await getCollection();
     const rent = {
-        userId: toObjectId(userId),
-        bookId: toObjectId(bookId),
+        userId,
+        bookId,
         active: true,
         rentedAt: new Date()
     };
@@ -61,7 +60,7 @@ const create = async ({ userId, bookId }) => {
 const close = async bookId => {
     const rents = await getCollection();
     return rents.findOneAndUpdate(
-        { bookId: toObjectId(bookId), active: true },
+        { bookId, active: true },
         { $set: { active: false, returnedAt: new Date() } },
         { returnDocument: "after" }
     );

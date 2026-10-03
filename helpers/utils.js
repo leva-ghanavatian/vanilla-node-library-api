@@ -61,16 +61,6 @@ const getRequiredParam = (req, name) => {
 	return value;
 };
 
-const toPositiveInt = (value, fallback) => {
-	const number = parseInt(value, 10);
-	return number > 0 ? number : fallback;
-};
-
-const getPagination = (req, { defaultLimit = 20, maxLimit = 100 } = {}) => ({
-	page: toPositiveInt(getParam(req, "page"), 1),
-	limit: Math.min(maxLimit, toPositiveInt(getParam(req, "limit"), defaultLimit))
-});
-
 /* ----------------------------- Error handling -------------------------- */
 
 // maps errors to HTTP responses
@@ -88,6 +78,5 @@ module.exports = {
 	getRequiredParam,
 	getQuery,
 	getParam,
-	getPagination,
 	handleError
 };

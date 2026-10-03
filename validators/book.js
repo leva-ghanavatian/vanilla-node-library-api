@@ -1,16 +1,25 @@
-const { createParser, isNonEmptyString, isValidPositiveNumber, trim } = require("../helpers/validation");
+const { createParser } = require("../helpers/validation");
 
 // `free` is intentionally absent: it is controlled by the server (rent/return).
 module.exports = createParser({
 	title: {
-		validate: v => isNonEmptyString(v) ? null : "Title is required to be string and cannot be empty.",
-		normalize: trim
+		type: "string", trim: true, empty: false, max: 200,
+		messages: {
+			string: "Title is required to be string and cannot be empty.",
+			stringEmpty: "Title is required to be string and cannot be empty.",
+			stringMax: "Title must be at most {expected} characters."
+		}
 	},
 	author: {
-		validate: v => isNonEmptyString(v) ? null : "Author is required to be string and cannot be empty.",
-		normalize: trim
+		type: "string", trim: true, empty: false, max: 200,
+		messages: {
+			string: "Author is required to be string and cannot be empty.",
+			stringEmpty: "Author is required to be string and cannot be empty.",
+			stringMax: "Author must be at most {expected} characters."
+		}
 	},
 	price: {
-		validate: v => isValidPositiveNumber(v) ? null : "Price must be a positive number."
+		type: "number", positive: true, max: 100000,
+		messages: { number: "Price must be a positive number.", numberPositive: "Price must be a positive number." }
 	}
 });

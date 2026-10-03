@@ -1,12 +1,14 @@
 const userModel = require("../models/User");
 const userInput = require("../validators/user");
+const pageInput = require("../validators/pagination");
+const idInput = require("../validators/id");
 const { signToken } = require("../helpers/auth");
-const { sendJson, readJsonBody, getRequiredParam, getPagination, handleError } = require("../helpers/utils");
+const { sendJson, readJsonBody, getRequiredParam, getQuery, handleError } = require("../helpers/utils");
 const { NotFoundError, UnauthorizedError } = require("../helpers/errors");
 
 const getAllUsers = async (req, res) => {
     try {
-        sendJson(res, 200, await userModel.find(getPagination(req)));
+        sendJson(res, 200, await userModel.find(pageInput.parseFilter(getQuery(req))));
     } catch (error) {
         handleError(res, error);
     }
@@ -14,7 +16,7 @@ const getAllUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
     try {
-        const user = await userModel.findById(getRequiredParam(req, "id"));
+        const user = await userModel.findById(idInput.parseId(getRequiredParam(req, "id")));
         if (!user) throw new NotFoundError("User not found");
         sendJson(res, 200, user);
     } catch (error) {
@@ -33,7 +35,7 @@ const registerUser = async (req, res) => {
 
 const upgradeUser = async (req, res) => {
     try {
-        const user = await userModel.setRole(getRequiredParam(req, "id"), userModel.ROLES.ADMIN);
+        const user = await userModel.setRole(idInput.parseId(getRequiredParam(req, "id")), userModel.ROLES.ADMIN);
         if (!user) throw new NotFoundError("User not found");
         sendJson(res, 200, user);
     } catch (error) {
@@ -43,7 +45,7 @@ const upgradeUser = async (req, res) => {
 
 const updateCrime = async (req, res) => {
     try {
-        const id = getRequiredParam(req, "id");
+        const id = idInput.parseId(getRequiredParam(req, "id"));
         const { crime } = userInput.parseCrime(await readJsonBody(req));
         const user = await userModel.setCrime(id, crime);
         if (!user) throw new NotFoundError("User not found");
