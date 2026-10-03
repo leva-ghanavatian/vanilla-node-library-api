@@ -3,67 +3,41 @@ const userInput = require("../validators/user");
 const pageInput = require("../validators/pagination");
 const idInput = require("../validators/id");
 const { signToken } = require("../helpers/auth");
-const { sendJson, readJsonBody, getRequiredParam, getQuery, handleError } = require("../helpers/utils");
 const { NotFoundError, UnauthorizedError } = require("../helpers/errors");
 
 const getAllUsers = async (req, res) => {
-    try {
-        sendJson(res, 200, await userModel.find(pageInput.parseFilter(getQuery(req))));
-    } catch (error) {
-        handleError(res, error);
-    }
+    res.json(await userModel.find(pageInput.parseFilter(req.query)));
 };
 
 const getUser = async (req, res) => {
-    try {
-        const user = await userModel.findById(idInput.parseId(getRequiredParam(req, "id")));
-        if (!user) throw new NotFoundError("User not found");
-        sendJson(res, 200, user);
-    } catch (error) {
-        handleError(res, error);
-    }
+    const user = await userModel.findById(idInput.parseId(req.query.id));
+    if (!user) throw new NotFoundError("User not found");
+    res.json(user);
 };
 
 const registerUser = async (req, res) => {
-    try {
-        const input = userInput.parseRegistration(await readJsonBody(req));
-        sendJson(res, 201, await userModel.create(input));
-    } catch (error) {
-        handleError(res, error);
-    }
+    res.status(201).json(await userModel.create(userInput.parseRegistration(req.body)));
 };
 
 const upgradeUser = async (req, res) => {
-    try {
-        const user = await userModel.setRole(idInput.parseId(getRequiredParam(req, "id")), userModel.ROLES.ADMIN);
-        if (!user) throw new NotFoundError("User not found");
-        sendJson(res, 200, user);
-    } catch (error) {
-        handleError(res, error);
-    }
+    const user = await userModel.setRole(idInput.parseId(req.query.id), userModel.ROLES.ADMIN);
+    if (!user) throw new NotFoundError("User not found");
+    res.json(user);
 };
 
 const updateCrime = async (req, res) => {
-    try {
-        const id = idInput.parseId(getRequiredParam(req, "id"));
-        const { crime } = userInput.parseCrime(await readJsonBody(req));
-        const user = await userModel.setCrime(id, crime);
-        if (!user) throw new NotFoundError("User not found");
-        sendJson(res, 200, user);
-    } catch (error) {
-        handleError(res, error);
-    }
+    const id = idInput.parseId(req.query.id);
+    const { crime } = userInput.parseCrime(req.body);
+    const user = await userModel.setCrime(id, crime);
+    if (!user) throw new NotFoundError("User not found");
+    res.json(user);
 };
 
 const loginUser = async (req, res) => {
-    try {
-        const { email, password } = userInput.parseLogin(await readJsonBody(req));
-        const user = await userModel.authenticate(email, password);
-        if (!user) throw new UnauthorizedError("Invalid email or password");
-        sendJson(res, 200, { token: signToken(user) });
-    } catch (error) {
-        handleError(res, error);
-    }
+    const { email, password } = userInput.parseLogin(req.body);
+    const user = await userModel.authenticate(email, password);
+    if (!user) throw new UnauthorizedError("Invalid email or password");
+    res.json({ token: signToken(user) });
 };
 
 module.exports = {

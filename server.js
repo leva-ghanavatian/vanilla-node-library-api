@@ -1,7 +1,6 @@
 require("dotenv").config();
-
-const http = require("http");
-const { getParam, sendError } = require("./helpers/utils");
+const express = require("express");
+const { requireJsonBody, notFound, errorHandler } = require("./middlewares/http");
 
 const bookCont = require("./controllers/bookCont");
 const userCont = require("./controllers/userCont");
@@ -11,37 +10,46 @@ const bookModel = require("./models/Book");
 const userModel = require("./models/User");
 const rentModel = require("./models/Rent");
 
-const hasId = req => getParam(req, "id") !== null;
+const byId = (single, list) => {
+    return (req, res, next) => {
 
-const routes = {
-    "GET /api/books":         (req, res) => (hasId(req) ? bookCont.getBook : bookCont.getAllBooks)(req, res),
-    "POST /api/books":        bookCont.createBook,
-    "PATCH /api/books":       bookCont.updateBook,
-    "DELETE /api/books":      bookCont.deleteBook,
+        if (req.query.id !== undefined) {
+            return single(req, res, next);
+        } else {
+            return list(req, res, next);
+        }
 
-    "GET /api/users":         (req, res) => (hasId(req) ? userCont.getUser : userCont.getAllUsers)(req, res),
-    "POST /api/users":        userCont.registerUser,
-    "POST /api/users/login":  userCont.loginUser,
-    "PUT /api/users/upgrade": userCont.upgradeUser,
-    "PUT /api/users":         userCont.updateCrime,
-
-    "GET /api/rents":         rentCont.getAllRents,
-    "POST /api/rents":        rentCont.rentBook,   
-    "PUT /api/rents/return":  rentCont.returnBook
+    };
 };
 
-const server = http.createServer((req, res) => {
-    const { pathname } = new URL(req.url, "http://localhost");
-    const handler = routes[`${req.method} ${pathname.replace(/\/+$/, "")}`];
+const api = express.Router();
 
-    if (handler) return handler(req, res);
-    sendError(res, 404, "Route not found");
-});
+api.get("/books",           byId(bookCont.getBook, bookCont.getAllBooks));
+api.post("/books",          requireJsonBody, bookCont.createBook);
+api.patch("/books",         requireJsonBody, bookCont.updateBook);
+api.delete("/books",        bookCont.deleteBook);
+
+api.get("/users",           byId(userCont.getUser, userCont.getAllUsers));
+api.post("/users",          requireJsonBody, userCont.registerUser);
+api.post("/users/login",    requireJsonBody, userCont.loginUser);
+api.put("/users/upgrade",   userCont.upgradeUser);
+api.put("/users",           requireJsonBody, userCont.updateCrime);
+
+api.get("/rents",           rentCont.getAllRents);
+api.post("/rents",          rentCont.rentBook);
+api.put("/rents/return",    rentCont.returnBook);
+
+const app = express();
+app.disable("x-powered-by");
+app.use(express.json({ limit: "1mb" }));
+app.use("/api", api);
+app.use(notFound);
+app.use(errorHandler); // always last
 
 // Indexes must exist before the first request is served
 const start = async () => {
     await Promise.all([bookModel.init(), userModel.init(), rentModel.init()]);
-    server.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+    app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
 };
 
 start().catch(error => {

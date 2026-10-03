@@ -1,38 +1,19 @@
 const rentModel = require("../models/Rent");
 const rentService = require("../services/rentService");
 const rentInput = require("../validators/rent");
-const {
-    sendJson, getRequiredParam, getQuery, handleError
-} = require("../helpers/utils");
 
 const getAllRents = async (req, res) => {
-    try {
-        const rents = await rentModel.find(rentInput.parseFilters(getQuery(req)));
-        sendJson(res, 200, rents);
-    } catch (error) {
-        handleError(res, error);
-    }
+    res.json(await rentModel.find(rentInput.parseFilters(req.query)));
 };
 
 const rentBook = async (req, res) => {
-    try {
-        const { userId, bookId } = rentInput.parseRentIds({
-            userId: getRequiredParam(req, "userId"),
-            bookId: getRequiredParam(req, "bookId")
-        });
-        sendJson(res, 201, await rentService.rentBook(userId, bookId));
-    } catch (error) {
-        handleError(res, error);
-    }
+    const { userId, bookId } = rentInput.parseRentIds(req.query);
+    res.status(201).json(await rentService.rentBook(userId, bookId));
 };
 
 const returnBook = async (req, res) => {
-    try {
-        const { bookId } = rentInput.parseBookId({ bookId: getRequiredParam(req, "bookId") });
-        sendJson(res, 200, await rentService.returnBook(bookId));
-    } catch (error) {
-        handleError(res, error);
-    }
+    const { bookId } = rentInput.parseBookId(req.query);
+    res.json(await rentService.returnBook(bookId));
 };
 
 module.exports = { getAllRents, rentBook, returnBook };
