@@ -34,6 +34,7 @@ api.post("/users",          requireJsonBody, userCont.registerUser);
 api.post("/users/login",    requireJsonBody, userCont.loginUser);
 api.put("/users/upgrade",   userCont.upgradeUser);
 api.put("/users",           requireJsonBody, userCont.updateCrime);
+api.delete("/users",        userCont.deleteUser);
 
 api.get("/rents",           rentCont.getAllRents);
 api.post("/rents",          rentCont.rentBook);

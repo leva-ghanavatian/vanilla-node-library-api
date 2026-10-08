@@ -40,11 +40,22 @@ const loginUser = async (req, res) => {
     res.json({ token: signToken(user) });
 };
 
+const deleteUser = async (req, res, next) => {
+
+        const id = idInput.parseId(req.query.id);
+        const deletedUser = await userModel.deleteUser(id);
+        if (!deletedUser) {
+            throw new NotFoundError("User not found");
+        }
+        res.json(deletedUser);
+};
+
 module.exports = {
     getAllUsers,
     getUser,
     registerUser,
     upgradeUser,
     updateCrime,
-    loginUser
+    loginUser,
+    deleteUser
 };

@@ -96,6 +96,11 @@ const setRole = (id, role) => {
 
 const setCrime = (id, crime) => modify(id, { crime });
 
+const deleteUser = async (id) => {
+    const users = await getCollection();
+    return users.findOneAndDelete({ _id: id }, HIDE_HASH);
+}
+
 module.exports = {
     ROLES,
     init,
@@ -104,5 +109,6 @@ module.exports = {
     authenticate,
     create,
     setRole,
-    setCrime
+    setCrime,
+    deleteUser
 };
