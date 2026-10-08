@@ -17,7 +17,6 @@ const errorHandler = (error, req, res, next) => {
     if (error.type === "entity.parse.failed") return res.status(400).json({ error: "Invalid JSON" });
     if (error.type === "entity.too.large") return res.status(413).json({ error: "Request body too large" });
     if (error.code === 11000) return res.status(409).json({ error: "Resource already exists" });
-    console.error("Unexpected error:", error);
     res.status(500).json({ error: "Internal server error" });
 };
 
