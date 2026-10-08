@@ -21,4 +21,8 @@ const errorHandler = (error, req, res, next) => {
     res.status(500).json({ error: "Internal server error" });
 };
 
-module.exports = { requireJsonBody, notFound, errorHandler };
+const byId = (single, list) => (req, res, next) =>
+    req.query.id !== undefined ? single(req, res, next) : list(req, res, next);
+
+
+module.exports = { requireJsonBody, notFound, errorHandler, byId };
