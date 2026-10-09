@@ -15,6 +15,12 @@ const getUser = async (req, res) => {
     res.json(user);
 };
 
+const getMe = async (req, res) => {
+    const user = await userModel.findById(idInput.parseId(req.user.sub));
+    if (!user) throw new NotFoundError("User not found");
+    res.json(user);
+};
+
 const registerUser = async (req, res) => {
     res.status(201).json(await userModel.create(userInput.parseRegistration(req.body)));
 };
@@ -42,18 +48,19 @@ const loginUser = async (req, res) => {
 
 const deleteUser = async (req, res, next) => {
 
-        const id = idInput.parseId(req.query.id);
-        const deletedUser = await userModel.deleteUser(id);
-        if (!deletedUser) {
-            throw new NotFoundError("User not found");
-        }
-        res.json(deletedUser);
+    const id = idInput.parseId(req.query.id);
+    const deletedUser = await userModel.deleteUser(id);
+    if (!deletedUser) {
+        throw new NotFoundError("User not found");
+    }
+    res.json(deletedUser);
 };
 
 module.exports = {
     getAllUsers,
     getUser,
     registerUser,
+    getMe,
     upgradeUser,
     updateCrime,
     loginUser,

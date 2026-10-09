@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { UnauthorizedError, ForbiddenError } = require("./errors");
+const { UnauthorizedError, ForbiddenError } = require("../helpers/errors");
 const { ROLES } = require("../models/User");
 
 const requireAuth = (req, res, next) => {
@@ -27,8 +27,4 @@ const requireAdmin = (req, res, next) => {
     next();
 };
 
-
-const signToken = user =>
-	jwt.sign({ sub: String(user._id), role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-module.exports = { signToken, requireAuth, requireAdmin };
+module.exports = { requireAuth, requireAdmin };
