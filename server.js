@@ -1,12 +1,17 @@
 require("dotenv").config();
 const express = require("express");
-const { notFound, errorHandler } = require("./middlewares/http");
+const helmet = require("helmet");
+const cors = require("cors");
+const { notFound, errorHandler, camelcase } = require("./middlewares/http");
 const { initModels } = require("./models");
 const api = require("./routes");
 
 const app = express();
 app.disable("x-powered-by");
+app.use(cors());
+app.use(helmet());
 app.use(express.json({ limit: "1mb" }));
+app.use(camelcase)
 app.use("/api", api);
 app.use(notFound);
 app.use(errorHandler); // always last

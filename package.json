@@ -12,10 +12,15 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "camelcase-keys": "^10.0.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fastest-validator": "^1.19.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
-    "mongodb": "^7.6.0"
+    "mongodb": "^7.6.0",
+    "morgan": "^1.12.1",
+    "omit-empty": "^1.0.0"
   }
 }
