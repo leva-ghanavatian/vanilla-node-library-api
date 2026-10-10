@@ -5,7 +5,7 @@ const idInput = require("../validators/id");
 const { NotFoundError } = require("../helpers/errors");
 
 const getAllBooks = async (req, res) => {
-    sendJson(res, 200, await bookModel.find(pageInput.parseFilter(req.query)));   
+    res.json(await bookModel.find(pageInput.parseFilter(req.query))) ;   
 };
 
 const getBook = async (req, res) => {
