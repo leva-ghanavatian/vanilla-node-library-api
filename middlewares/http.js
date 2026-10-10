@@ -1,4 +1,43 @@
 const { AppError, ValidationError } = require("../helpers/errors");
+const omitEmptyFunc = require("omit-empty");
+const camelcaseKeys = (...args) =>
+    import("camelcase-keys").then(
+        ({ default: camelcase }) => camelcase(...args)
+    );
+
+const omitEmptyFields0 = (req, res, next) => { // route.use(omitEmptyFields)
+    req.body = omitEmptyFunc(req.body);
+    next()
+}  
+const omitEmptyFields1 = (options) => { // like options = {omitZero : true} route.use(omitEmptyFields({option}))
+    return (req, res, next) => {
+        req.body = omitEmptyFunc(req.body);
+        next()
+    }
+}  
+
+const omitEmptyFields = (options = {}) => {
+    return (req, res, next) => {
+        req.body = omitEmptyFunc(req.body, options);
+        next();
+    };
+};
+
+const camelcase = async (req, res, next) => {
+    //console.log("[CAMELCASE] req.body BEFORE:", req.body);
+    req.body = await camelcaseKeys(req.body, { deep: true });
+    //console.log("[CAMELCASE] req.body AFTER:", req.body);
+
+    //console.log("[CAMELCASE] req.params BEFORE:", req.params);
+    req.params = await camelcaseKeys(req.params);
+    //console.log("[CAMELCASE] req.params AFTER:", req.params);
+
+    //console.log("[CAMELCASE] req.query BEFORE:", req.query);
+    req.query = await camelcaseKeys(req.query);
+    //console.log("[CAMELCASE] req.query AFTER:", req.query);
+
+    next();
+};
 
 const requireJsonBody = (req, res, next) => {
     const body = req.body;
@@ -24,4 +63,4 @@ const byId = (single, list) => (req, res, next) =>
     req.query.id !== undefined ? single(req, res, next) : list(req, res, next);
 
 
-module.exports = { requireJsonBody, notFound, errorHandler, byId };
+module.exports = { omitEmptyFields, camelcase, requireJsonBody, notFound, errorHandler, byId }; 
