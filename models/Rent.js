@@ -20,7 +20,6 @@ const init = async () => {
     ]);
 };
 
-// Optional filters: userId, bookId, active (true = not yet returned)
 const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
     const rents = await getCollection();
 
@@ -30,10 +29,32 @@ const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
     if (active !== undefined) filter.active = active;
 
     return rents
-        .find(filter)
-        .sort({ rentedAt: -1, _id: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit)
+        .aggregate([
+            { $match: filter },
+            { $sort: { rentedAt: -1, _id: -1 } },
+            { $skip: (page - 1) * limit },
+            { $limit: limit },
+            // Lookups run after $limit, so only the returned page is joined
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    pipeline: [{ $project: { password: 0 } }],
+                    as: "user"
+                }
+            },
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "bookId",
+                    foreignField: "_id",
+                    as: "book"
+                }
+            },
+            { $set: { user: { $first: "$user" }, book: { $first: "$book" } } },
+            { $unset: ["userId", "bookId"] }
+        ])
         .toArray();
 };
 
