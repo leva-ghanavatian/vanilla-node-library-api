@@ -5,9 +5,10 @@ const bookCont = require("../controllers/bookCont");
 
 const router = express.Router();
 
-router.get("/", byId(bookCont.getBook, bookCont.getAllBooks));
+router.get("/", bookCont.getAllBooks);
+router.get("/:id", bookCont.getBook);
 router.post("/", requireAuth, requireJsonBody, bookCont.createBook);
-router.patch("/", requireAuth, requireJsonBody, bookCont.updateBook);
-router.delete("/", requireAuth, requireAdmin, bookCont.deleteBook);
+router.patch("/:id", requireAuth, requireJsonBody, bookCont.updateBook);
+router.delete("/:id", requireAuth, requireAdmin, bookCont.deleteBook);
 
 module.exports = router;

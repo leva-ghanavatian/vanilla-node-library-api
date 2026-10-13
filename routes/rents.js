@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get("/", requireAuth, requireAdmin, rentCont.getAllRents);
 router.post("/", requireAuth, rentCont.rentBook);
-router.put("/return", requireAuth, requireAdmin, rentCont.returnBook);
+router.put("/return", requireAuth, rentCont.returnBook);
 
 module.exports = router;

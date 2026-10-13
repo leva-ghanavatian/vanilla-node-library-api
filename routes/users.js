@@ -5,12 +5,13 @@ const userCont = require("../controllers/userCont");
 
 const router = express.Router();
 
-router.get("/", requireAuth, requireAdmin, byId(userCont.getUser, userCont.getAllUsers));
 router.post("/", requireJsonBody, userCont.registerUser);
-router.get("/me", requireAuth, userCont.getMe);
 router.post("/login", requireJsonBody, userCont.loginUser);
-router.put("/upgrade", requireAuth, requireAdmin, userCont.upgradeUser);
-router.put("/", requireAuth, requireAdmin, requireJsonBody, userCont.updateCrime);
-router.delete("/", requireAuth, requireAdmin, userCont.deleteUser);
+router.get("/me", requireAuth, userCont.getMe);          // must stay above "/:id"
+router.get("/", requireAuth, requireAdmin, userCont.getAllUsers);
+router.get("/:id", requireAuth, requireAdmin, userCont.getUser);
+router.patch("/:id/upgrade", requireAuth, requireAdmin, userCont.upgradeUser);
+router.patch("/:id", requireAuth, requireAdmin, requireJsonBody, userCont.updateCrime);
+router.delete("/:id", requireAuth, requireAdmin, userCont.deleteUser);
 
 module.exports = router;
