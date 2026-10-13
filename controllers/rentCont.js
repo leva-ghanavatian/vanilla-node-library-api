@@ -7,7 +7,7 @@ const getAllRents = async (req, res) => {
 };
 
 const rentBook = async (req, res) => {
-    const { userId, bookId } = rentInput.parseRentIds(req.query);
+    const { userId, bookId } = rentInput.parseRentIds(req.body);
     res.status(201).json(await rentService.rentBook(userId, bookId));
 };
 

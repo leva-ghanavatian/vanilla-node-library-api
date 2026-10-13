@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -10,11 +11,14 @@ const app = express();
 app.disable("x-powered-by");
 app.use(cors());
 app.use(helmet());
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json({ limit: "1mb" }));
 app.use(camelcase)
+
 app.use("/api", api);
 app.use(notFound);
-app.use(errorHandler); // always last
+
+app.use(errorHandler);
 
 // Indexes must exist before the first request is served
 const start = async () => {

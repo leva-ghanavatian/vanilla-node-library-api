@@ -10,7 +10,7 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUser = async (req, res) => {
-    const user = await userModel.findById(idInput.parseId(req.query.id));
+    const user = await userModel.findById(idInput.parseId(req.params.id));
     if (!user) throw new NotFoundError("User not found");
     res.json(user);
 };
@@ -26,13 +26,13 @@ const registerUser = async (req, res) => {
 };
 
 const upgradeUser = async (req, res) => {
-    const user = await userModel.setRole(idInput.parseId(req.query.id), userModel.ROLES.ADMIN);
+    const user = await userModel.setRole(idInput.parseId(req.params.id), userModel.ROLES.ADMIN);
     if (!user) throw new NotFoundError("User not found");
     res.json(user);
 };
 
 const updateCrime = async (req, res) => {
-    const id = idInput.parseId(req.query.id);
+    const id = idInput.parseId(req.params.id);
     const { crime } = userInput.parseCrime(req.body);
     const user = await userModel.setCrime(id, crime);
     if (!user) throw new NotFoundError("User not found");
@@ -48,7 +48,7 @@ const loginUser = async (req, res) => {
 
 const deleteUser = async (req, res, next) => {
 
-    const id = idInput.parseId(req.query.id);
+    const id = idInput.parseId(req.params.id);
     const deletedUser = await userModel.deleteUser(id);
     if (!deletedUser) {
         throw new NotFoundError("User not found");

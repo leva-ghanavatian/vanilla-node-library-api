@@ -9,7 +9,7 @@ const getAllBooks = async (req, res) => {
 };
 
 const getBook = async (req, res) => {
-    const book = await bookModel.findById(idInput.parseId(req.query.id));
+    const book = await bookModel.findById(idInput.parseId(req.params.id));
     if (!book) throw new NotFoundError("Book not found");
     res.json(book);
 };
@@ -19,14 +19,14 @@ const createBook = async (req, res) => {
 };
 
 const updateBook = async (req, res) => {
-    const id = idInput.parseId(req.query.id);
+    const id = idInput.parseId(req.params.id);
     const book = await bookModel.update(id, bookInput.parseUpdate(req.body));
     if (!book) throw new NotFoundError("Book not found");
     res.json(book);
 };
 
 const deleteBook = async (req, res) => {
-    const deleted = await bookModel.remove(idInput.parseId(req.query.id));
+    const deleted = await bookModel.remove(idInput.parseId(req.params.id));
     if (!deleted) throw new NotFoundError("Book not found");
     res.json(deleted);
 };
