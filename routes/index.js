@@ -8,9 +8,9 @@ router.get("/", (req, res) => {
 })
 
 router.post('/upload', upload.single('uploaded_file'), (req, res) => {
-    console.log('req.file:', req.file)
-    console.log('req.body:', req.body)
-    console.log('req.headers content-type:', req.headers['content-type'])
+    // console.log('req.file:', req.file)
+    // console.log('req.body:', req.body)
+    // console.log('req.headers content-type:', req.headers['content-type'])
     res.sendStatus(200)
 })
 
