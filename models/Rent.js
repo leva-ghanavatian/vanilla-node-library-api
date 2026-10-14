@@ -34,13 +34,12 @@ const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
             { $sort: { rentedAt: -1, _id: -1 } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
-            // Lookups run after $limit, so only the returned page is joined
             {
                 $lookup: {
                     from: "users",
                     localField: "userId",
                     foreignField: "_id",
-                    pipeline: [{ $project: { password: 0 } }],
+                    pipeline: [{ $project: { passwordHash: 0 } }],
                     as: "user"
                 }
             },
