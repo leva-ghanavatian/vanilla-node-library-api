@@ -1,4 +1,5 @@
 const { AppError, ValidationError } = require("../helpers/errors");
+const multer = require('multer');
 const omitEmptyFunc = require("omit-empty");
 const camelcaseKeys = (...args) =>
     import("camelcase-keys").then(
@@ -8,13 +9,13 @@ const camelcaseKeys = (...args) =>
 const omitEmptyFields0 = (req, res, next) => { // route.use(omitEmptyFields)
     req.body = omitEmptyFunc(req.body);
     next()
-}  
+}
 const omitEmptyFields1 = (options) => { // like options = {omitZero : true} route.use(omitEmptyFields({option}))
     return (req, res, next) => {
         req.body = omitEmptyFunc(req.body);
         next()
     }
-}  
+}
 
 const omitEmptyFields = (options = {}) => {
     return (req, res, next) => {
@@ -49,10 +50,23 @@ const requireJsonBody = (req, res, next) => {
 
 const notFound = (req, res) => res.status(404).json({ error: "Route not found" });
 
-// eslint-disable-next-line no-unused-vars
 const errorHandler = (error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+    if (error instanceof multer.MulterError) {
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({
+                error: 'Photo must not exceed 5 MB'
+            });
+        }
+
+        return res.status(400).json({
+            error: error.message
+        });
+    }
+    if (error.message === 'Invalid file type')
+        return res.status(400).json({ error: error.message });
+
     if (error.type === "entity.parse.failed") return res.status(400).json({ error: "Invalid JSON" });
     if (error.type === "entity.too.large") return res.status(413).json({ error: "Request body too large" });
     if (error.code === 11000) return res.status(409).json({ error: "Resource already exists" });
