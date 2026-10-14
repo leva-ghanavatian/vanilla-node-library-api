@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.6.0",
     "morgan": "^1.12.1",
+    "multer": "^2.4.0",
     "omit-empty": "^1.0.0"
   }
 }

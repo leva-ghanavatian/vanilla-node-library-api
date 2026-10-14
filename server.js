@@ -3,9 +3,12 @@ const path = require("path");
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const multer = require('multer');
 const { notFound, errorHandler, camelcase } = require("./middlewares/http");
 const { initModels } = require("./models");
 const api = require("./routes");
+
+const upload = multer({ dest: './public/data/uploads/' });
 
 const app = express();
 app.disable("x-powered-by");
