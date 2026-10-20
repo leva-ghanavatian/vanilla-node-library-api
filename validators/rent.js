@@ -1,5 +1,6 @@
-const { createParser, pagination, objectId } = require("../helpers/validation");
-
+const { createParser } = require("../helpers/validation");
+const { schema: pagination } = require("./pagination");
+const { objectId } = require("./id");
 const rentInput = createParser({
 	userId: objectId("userId"),
 	bookId: objectId("bookId"),

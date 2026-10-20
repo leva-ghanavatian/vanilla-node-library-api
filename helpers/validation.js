@@ -52,24 +52,4 @@ const createParser = schema => {
 	};
 };
 
-const pagination = {
-	page: {
-		type: "number", integer: true, min: 1, convert: true, default: 1,
-		messages: { number: "page must be a positive integer.", numberInteger: "page must be a positive integer.", numberMin: "page must be a positive integer." }
-	},
-	limit: {
-		type: "number", integer: true, min: 1, max: 100, convert: true, default: 20,
-		messages: { number: "limit must be between 1 and 100.", numberInteger: "limit must be between 1 and 100.", numberMin: "limit must be between 1 and 100.", numberMax: "limit must be between 1 and 100." }
-	}
-};
-
-const objectId = label => ({
-	type: "objectID",
-	convert: true, // string in, ObjectId instance out
-	messages: {
-		required: `${label} is required.`,
-		objectID: `${label} must be a valid id.`
-	}
-});
-
-module.exports = { createParser, pagination, objectId };
+module.exports = { createParser };
