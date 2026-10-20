@@ -89,7 +89,7 @@ const modify = async (_id, fields) => {
 
 const setRole = (id, role) => {
     if (!Object.values(ROLES).includes(role)) {
-        throw new Error(`Invalid role: ${role}`);
+        throw new ValidationError("Invalid role");
     }
     return modify(id, { role });
 };
