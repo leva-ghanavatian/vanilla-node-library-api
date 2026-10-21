@@ -30,12 +30,12 @@ const init = async () => {
     ]);
 };
 
-const find = async ({ page = 1, limit = 20 } = {}) => {
+const find = async ({ filter, sort, skip, limit }) => {
     const users = await getCollection();
     return users
-        .find({}, HIDE_HASH)
-        .sort({ createdAt: -1, _id: -1 })
-        .skip((page - 1) * limit)
+        .find(filter, { ...HIDE_HASH, collation: CASE_INSENSITIVE })
+        .sort({ ...sort, _id: -1 })   // _id keeps pages stable when sort values tie
+        .skip(skip)
         .limit(limit)
         .toArray();
 };
@@ -46,13 +46,16 @@ const findById = async _id => {
     return users.findOne({ _id }, HIDE_HASH);
 };
 
+const DUMMY_HASH = bcrypt.hashSync("timing-equalizer", 12);
+
 // Returns the user (without passwordHash) when the credentials match, else null.
 // The hash never leaves this file.
 const authenticate = async (email, password) => {
     const users = await getCollection();
     const user = await users.findOne({ email }, { collation: CASE_INSENSITIVE });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) return null;
-
+    // always run bcrypt, so response time doesn't reveal whether the email exists
+    const matches = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+    if (!user || !matches) return null;
     const { passwordHash, ...safe } = user;
     return safe;
 };
@@ -87,12 +90,7 @@ const modify = async (_id, fields) => {
     );
 };
 
-const setRole = (id, role) => {
-    if (!Object.values(ROLES).includes(role)) {
-        throw new ValidationError("Invalid role");
-    }
-    return modify(id, { role });
-};
+const setRole = (id, role) => modify(id, { role });
 
 const setCrime = (id, crime) => modify(id, { crime });
 

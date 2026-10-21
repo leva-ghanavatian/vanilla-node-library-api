@@ -1,7 +1,13 @@
 const DB = require("../configs/db");
 const { ConflictError } = require("../helpers/errors");
 
+const CASE_INSENSITIVE = { locale: "en", strength: 2 };
 const getCollection = async () => (await DB.getDb()).collection("books");
+
+await books.createIndex(
+    { title: 1, author: 1 },
+    { unique: true, name: "unique_title_author", collation: CASE_INSENSITIVE }
+);
 
 // Turns a Mongo duplicate-key error into a meaningful 409
 const rethrowDuplicate = error => {
@@ -30,13 +36,12 @@ const init = async () => {
     );
 };
 
-// a filter for fields can be implemented in here.
-const find = async ({ page = 1, limit = 20 } = {}) => {
+const find = async ({ filter, sort, skip, limit }) => {
     const books = await getCollection();
     return books
-        .find()
-        .sort({ createdAt: -1, _id: -1 })
-        .skip((page - 1) * limit)
+        .find(filter, { collation: CASE_INSENSITIVE })
+        .sort({ ...sort, _id: -1 })   // _id keeps pages stable when sort values tie
+        .skip(skip)
         .limit(limit)
         .toArray();
 };

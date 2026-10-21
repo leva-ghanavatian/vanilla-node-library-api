@@ -16,11 +16,12 @@ const init = async () => {
             partialFilterExpression: { active: true }
         },
         // Fast "rents of this user, newest first"
-        { key: { userId: 1, rentedAt: -1 }, name: "rents_by_user" }
+        { key: { userId: 1, rentedAt: -1 }, name: "rents_by_user" },
+        { key: { bookId: 1, rentedAt: -1 }, name: "rents_by_book" }
     ]);
 };
 
-const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
+const find = async ({ filter, sort, skip, limit }) => {
     const rents = await getCollection();
 
     const filter = {};
@@ -31,8 +32,8 @@ const find = async ({ page = 1, limit = 20, userId, bookId, active } = {}) => {
     return rents
         .aggregate([
             { $match: filter },
-            { $sort: { rentedAt: -1, _id: -1 } },
-            { $skip: (page - 1) * limit },
+            { $sort: { ...sort, _id: -1 } },
+            { $skip: skip },
             { $limit: limit },
             {
                 $lookup: {
