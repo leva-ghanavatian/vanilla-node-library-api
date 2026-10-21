@@ -1,24 +1,27 @@
 const userModel = require("../models/User");
 const userInput = require("../validators/user");
-const pageInput = require("../validators/pagination");
-const idInput = require("../validators/id");
+const { parseUserFilter, parseUserSort } = require("../validators/userFilter");
+const { parsePagination } = require("../validators/pagination");
+const { parseId } = require("../validators/id");
 const { signToken } = require("../helpers/auth");
-const { NotFoundError, UnauthorizedError } = require("../helpers/errors");
+const { UnauthorizedError } = require("../helpers/errors");
+const found = require("../helpers/found");
 
 const getAllUsers = async (req, res) => {
-    res.json(await userModel.find(pageInput.parseFilter(req.query)));
+    const { page, limit, sort, ...rest } = req.query;
+    res.json(await userModel.find({
+        filter: parseUserFilter(rest),
+        sort: parseUserSort(sort),
+        ...parsePagination({ page, limit }),   // page, limit, skip
+    }));
 };
 
 const getUser = async (req, res) => {
-    const user = await userModel.findById(idInput.parseId(req.params.id));
-    if (!user) throw new NotFoundError("User not found");
-    res.json(user);
+    res.json(found(await userModel.findById(parseId(req.params.id))), "User");
 };
 
 const getMe = async (req, res) => {
-    const user = await userModel.findById(idInput.parseId(req.user.sub));
-    if (!user) throw new NotFoundError("User not found");
-    res.json(user);
+    res.json(found(await userModel.findById(parseId(req.user.sub))), "User");
 };
 
 const registerUser = async (req, res) => {
@@ -26,17 +29,13 @@ const registerUser = async (req, res) => {
 };
 
 const upgradeUser = async (req, res) => {
-    const user = await userModel.setRole(idInput.parseId(req.params.id), userModel.ROLES.ADMIN);
-    if (!user) throw new NotFoundError("User not found");
-    res.json(user);
+    res.json(found(await userModel.setRole(parseId(req.params.id), userModel.ROLES.ADMIN)), "User");
 };
 
 const updateCrime = async (req, res) => {
-    const id = idInput.parseId(req.params.id);
+    const id = parseId(req.params.id);
     const { crime } = userInput.parseCrime(req.body);
-    const user = await userModel.setCrime(id, crime);
-    if (!user) throw new NotFoundError("User not found");
-    res.json(user);
+    res.json(found(await userModel.setCrime(id, crime)), "User");
 };
 
 const loginUser = async (req, res) => {
@@ -46,14 +45,8 @@ const loginUser = async (req, res) => {
     res.json({ token: signToken(user) });
 };
 
-const deleteUser = async (req, res, next) => {
-
-    const id = idInput.parseId(req.params.id);
-    const deletedUser = await userModel.deleteUser(id);
-    if (!deletedUser) {
-        throw new NotFoundError("User not found");
-    }
-    res.json(deletedUser);
+const deleteUser = async (req, res) => {
+    res.json(found(await userModel.deleteUser(parseId(req.params.id))), "User");
 };
 
 module.exports = {

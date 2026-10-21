@@ -1,18 +1,25 @@
 const rentModel = require("../models/Rent");
 const rentService = require("../services/rentService");
-const rentInput = require("../validators/rent");
+const { parseRentFilter, parseRentSort, parseRentIds, parseBookId
+} = require("../validators/rent");
+const { parsePagination } = require("../validators/pagination");
 
 const getAllRents = async (req, res) => {
-    res.json(await rentModel.find(rentInput.parseFilters(req.query)));
+    const { page, limit, sort, ...rest } = req.query;
+    res.json(await rentModel.find({
+        filter: parseRentFilter(rest),
+        sort: parseRentSort(sort),
+        ...parsePagination({ page, limit }),
+    }));
 };
 
 const rentBook = async (req, res) => {
-    const { userId, bookId } = rentInput.parseRentIds(req.body);
+    const { userId, bookId } = parseRentIds(req.body);
     res.status(201).json(await rentService.rentBook(userId, bookId));
 };
 
 const returnBook = async (req, res) => {
-    const { bookId } = rentInput.parseBookId(req.query);
+    const { bookId } = parseBookId(req.query);
     res.json(await rentService.returnBook(bookId));
 };
 

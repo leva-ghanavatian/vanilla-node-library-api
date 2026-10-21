@@ -1,17 +1,20 @@
 const bookModel = require("../models/Book");
 const bookInput = require("../validators/book");
-const pageInput = require("../validators/pagination");
-const idInput = require("../validators/id");
-const { NotFoundError } = require("../helpers/errors");
+const { parseBookFilter, parseBookSort } = require("../validators/bookFilter");
+const { parsePagination } = require("../validators/pagination");
+const { parseId } = require("../validators/id");
 
 const getAllBooks = async (req, res) => {
-    res.json(await bookModel.find(pageInput.parseFilter(req.query))) ;   
+    const { page, limit, sort, ...rest } = req.query;
+    res.json(await bookModel.find({
+        filter: parseBookFilter(rest),
+        sort: parseBookSort(sort),
+        ...parsePagination({ page, limit }),
+    }));
 };
 
 const getBook = async (req, res) => {
-    const book = await bookModel.findById(idInput.parseId(req.params.id));
-    if (!book) throw new NotFoundError("Book not found");
-    res.json(book);
+    res.json(found(await bookModel.findById(parseId(req.params.id)), "Book"));
 };
 
 const createBook = async (req, res) => {
@@ -19,16 +22,12 @@ const createBook = async (req, res) => {
 };
 
 const updateBook = async (req, res) => {
-    const id = idInput.parseId(req.params.id);
-    const book = await bookModel.update(id, bookInput.parseUpdate(req.body));
-    if (!book) throw new NotFoundError("Book not found");
-    res.json(book);
+    const id = parseId(req.params.id);
+    res.json(found(await bookModel.update(id, bookInput.parseUpdate(req.body)), "Book"));
 };
 
 const deleteBook = async (req, res) => {
-    const deleted = await bookModel.remove(idInput.parseId(req.params.id));
-    if (!deleted) throw new NotFoundError("Book not found");
-    res.json(deleted);
+    res.json(found(await bookModel.remove(parseId(req.params.id)), "Book"));
 };
 
 module.exports = {
