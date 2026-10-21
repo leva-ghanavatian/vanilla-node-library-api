@@ -66,6 +66,7 @@ const userInput = createParser({
 });
 
 module.exports = {
+	userSchema: userInput.schema,
 	parseRegistration: data => userInput.parseOnly(data, ["name", "username", "email", "password"]),
 	parseLogin: data => userInput.parseOnly(data, ["email", "password"]),
 	parseCrime: data => userInput.parseOnly(data, ["crime"])

@@ -13,5 +13,11 @@ const schema = {
 	}
 };
 
-// `schema` is exported so other validators (rent) can embed the same fields.
-module.exports = { schema, ...createParser(schema) };
+const parser = createParser(schema);
+
+module.exports = {
+	parsePagination: data => {
+		const { page, limit } = parser.parseCreate(data);
+		return { page, limit, skip: (page - 1) * limit };
+	}
+};
