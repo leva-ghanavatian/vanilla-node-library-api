@@ -2,7 +2,7 @@ const bookModel = require("../models/Book");
 const Book = require("../src/resources/book");
 const { parsePagination } = require("../src/parsing/pagination");
 const { parseId } = require("../src/parsing/id");
-const { found } = require("../helpers/found");
+const found = require("../helpers/found");
 
 const getAllBooks = async (req, res) => {
     const { page, limit, sort, ...filterQuery } = req.query;
@@ -24,6 +24,9 @@ const getAllBooks = async (req, res) => {
 const getBook = async (req, res) => {
     const id = parseId(req.params.id);
     const book = await bookModel.findById(id);
+    if (!found) {
+        return res.status(404).json({ error: "Book not found" });
+    }
     res.json(found(book, "Book"));
 };
 
