@@ -1,4 +1,4 @@
-const { createParser } = require("../helpers/validation");
+const { createParser } = require("./compile");
 
 const msg = text => ({ number: text, numberInteger: text, numberMin: text, numberMax: text });
 

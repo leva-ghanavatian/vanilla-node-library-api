@@ -1,4 +1,4 @@
-const { createParser } = require("../helpers/validation");
+const { createParser } = require("./compile");
 
 const objectId = label => ({
 	type: "objectID",

@@ -1,4 +1,4 @@
-const { ValidationError } = require("./errors");
+const { ValidationError } = require("../../helpers/errors");
 
 const buildSortParser = (sortable, fallback = { createdAt: -1 }) => (raw) => {
   if (!raw) return fallback;

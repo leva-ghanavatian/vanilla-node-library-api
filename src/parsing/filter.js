@@ -10,8 +10,9 @@
 //     }
 // } => handed to something like : const books = await Book.find(filter);
 
-const { v, pick } = require("./validator");
-const { ValidationError } = require("./errors");
+const { v } = require("../core/validator");
+const { pick } = require("../core/utils");
+const { ValidationError } = require("../../helpers/errors");
 
 // "__" separator, because field names already contain "_" (created_at).
 const OPS = {
@@ -21,21 +22,6 @@ const OPS = {
   in: "$in", nin: "$nin",
   like: "$regex"
 };
-
-const WRITE_ONLY = ["min", "max", "pattern", "messages", "default", "positive"];
-
-const stripWrite = rule => {
-  const copy = { ...rule };
-  WRITE_ONLY.forEach(k => delete copy[k]);
-  return copy;
-};
-
-const filterable = (schema, fields, extra = {}) => ({
-  ...Object.fromEntries(
-    Object.entries(pick(schema, fields)).map(([f, rule]) => [f, stripWrite(rule)])
-  ),
-  ...extra
-});
 
 const has = Object.hasOwn;
 
@@ -84,4 +70,4 @@ const buildFilterParser = spec => {
   };
 };
 
-module.exports = { buildFilterParser, filterable };
+module.exports = { buildFilterParser };
