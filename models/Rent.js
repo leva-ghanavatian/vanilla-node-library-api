@@ -23,35 +23,14 @@ const init = async () => {
 
 const find = async ({ filter, sort, skip, limit }) => {
     const rents = await getCollection();
-
-    const filter = {};
-    if (userId) filter.userId = userId;
-    if (bookId) filter.bookId = bookId;
-    if (active !== undefined) filter.active = active;
-
     return rents
         .aggregate([
             { $match: filter },
             { $sort: { ...sort, _id: -1 } },
             { $skip: skip },
             { $limit: limit },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    pipeline: [{ $project: { passwordHash: 0 } }],
-                    as: "user"
-                }
-            },
-            {
-                $lookup: {
-                    from: "books",
-                    localField: "bookId",
-                    foreignField: "_id",
-                    as: "book"
-                }
-            },
+            { $lookup: { from: "users", localField: "userId", foreignField: "_id", pipeline: [{ $project: { passwordHash: 0 } }], as: "user" } },
+            { $lookup: { from: "books", localField: "bookId", foreignField: "_id", as: "book" } },
             { $set: { user: { $first: "$user" }, book: { $first: "$book" } } },
             { $unset: ["userId", "bookId"] }
         ])
