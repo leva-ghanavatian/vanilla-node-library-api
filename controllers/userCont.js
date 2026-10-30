@@ -1,52 +1,71 @@
 const userModel = require("../models/User");
-const userInput = require("../validators/user");
-const { parseUserFilter, parseUserSort } = require("../validators/userFilter");
-const { parsePagination } = require("../validators/pagination");
-const { parseId } = require("../validators/id");
+const User = require("../src/resources/user");
+const { parsePagination } = require("../src/parsing/pagination");
+const { parseId } = require("../src/parsing/id");
 const { signToken } = require("../helpers/auth");
 const { UnauthorizedError } = require("../helpers/errors");
 const found = require("../helpers/found");
 
+
 const getAllUsers = async (req, res) => {
-    const { page, limit, sort, ...rest } = req.query;
-    res.json(await userModel.find({
-        filter: parseUserFilter(rest),
-        sort: parseUserSort(sort),
-        ...parsePagination({ page, limit }),   // page, limit, skip
-    }));
+    const { page, limit, sort, ...filterQuery } = req.query;
+
+    const filter = User.parseFilter(filterQuery);
+    const sortObj = User.parseSort(sort);
+    const { skip, limit: parsedLimit } = parsePagination({ page, limit });
+
+    const users = await userModel.find({
+        filter,
+        sort: sortObj,
+        skip,
+        limit: parsedLimit
+    });
+
+    res.json(users);
 };
 
 const getUser = async (req, res) => {
-    res.json(found(await userModel.findById(parseId(req.params.id))), "User");
+    const id = parseId(req.params.id);
+    const user = await userModel.findById(id);
+    res.json(found(user, "User"));
 };
 
 const getMe = async (req, res) => {
-    res.json(found(await userModel.findById(parseId(req.user.sub))), "User");
+    const id = parseId(req.user.sub);
+    const user = await userModel.findById(id);
+    res.json(found(user, "User"));
 };
 
 const registerUser = async (req, res) => {
-    res.status(201).json(await userModel.create(userInput.parseRegistration(req.body)));
+    const data = User.parseOnly(req.body, ["name", "username", "email", "password"]);
+    const newUser = await userModel.create(data);
+    res.status(201).json(newUser);
 };
 
 const upgradeUser = async (req, res) => {
-    res.json(found(await userModel.setRole(parseId(req.params.id), userModel.ROLES.ADMIN)), "User");
+    const id = parseId(req.params.id);
+    const user = await userModel.setRole(id, userModel.ROLES.ADMIN);
+    res.json(found(user, "User"));
 };
 
 const updateCrime = async (req, res) => {
     const id = parseId(req.params.id);
-    const { crime } = userInput.parseCrime(req.body);
-    res.json(found(await userModel.setCrime(id, crime)), "User");
+    const { crime } = User.parseOnly(req.body, ["crime"]);
+    const user = await userModel.setCrime(id, crime);
+    res.json(found(user, "User"));
 };
 
 const loginUser = async (req, res) => {
-    const { email, password } = userInput.parseLogin(req.body);
+    const { email, password } = User.parseOnly(req.body, ["email", "password"]);
     const user = await userModel.authenticate(email, password);
     if (!user) throw new UnauthorizedError("Invalid email or password");
     res.json({ token: signToken(user) });
 };
 
 const deleteUser = async (req, res) => {
-    res.json(found(await userModel.deleteUser(parseId(req.params.id))), "User");
+    const id = parseId(req.params.id);
+    const user = await userModel.deleteUser(id);
+    res.json(found(user, "User"));
 };
 
 module.exports = {

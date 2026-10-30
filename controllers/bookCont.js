@@ -1,33 +1,49 @@
 const bookModel = require("../models/Book");
-const bookInput = require("../validators/book");
-const { parseBookFilter, parseBookSort } = require("../validators/bookFilter");
-const { parsePagination } = require("../validators/pagination");
-const { parseId } = require("../validators/id");
+const Book = require("../src/resources/book");
+const { parsePagination } = require("../src/parsing/pagination");
+const { parseId } = require("../src/parsing/id");
+const { found } = require("../helpers/found");
 
 const getAllBooks = async (req, res) => {
-    const { page, limit, sort, ...rest } = req.query;
-    res.json(await bookModel.find({
-        filter: parseBookFilter(rest),
-        sort: parseBookSort(sort),
-        ...parsePagination({ page, limit }),
-    }));
+    const { page, limit, sort, ...filterQuery } = req.query;
+
+    const filter = Book.parseFilter(filterQuery);
+    const sortObj = Book.parseSort(sort);
+    const { skip, limit: parsedLimit } = parsePagination({ page, limit });
+
+    const books = await bookModel.find({
+        filter,
+        sort: sortObj,
+        skip,
+        limit: parsedLimit
+    });
+
+    res.json(books);
 };
 
 const getBook = async (req, res) => {
-    res.json(found(await bookModel.findById(parseId(req.params.id)), "Book"));
+    const id = parseId(req.params.id);
+    const book = await bookModel.findById(id);
+    res.json(found(book, "Book"));
 };
 
 const createBook = async (req, res) => {
-    res.status(201).json(await bookModel.create(bookInput.parseCreate(req.body)));
+    const data = Book.parseCreate(req.body);
+    const newBook = await bookModel.create(data);
+    res.status(201).json(newBook);
 };
 
 const updateBook = async (req, res) => {
     const id = parseId(req.params.id);
-    res.json(found(await bookModel.update(id, bookInput.parseUpdate(req.body)), "Book"));
+    const data = Book.parseUpdate(req.body);
+    const updatedBook = await bookModel.update(id, data);
+    res.json(found(updatedBook, "Book"));
 };
 
 const deleteBook = async (req, res) => {
-    res.json(found(await bookModel.remove(parseId(req.params.id)), "Book"));
+    const id = parseId(req.params.id);
+    const deletedBook = await bookModel.remove(id);
+    res.json(found(deletedBook, "Book"));
 };
 
 module.exports = {
