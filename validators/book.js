@@ -18,7 +18,7 @@ module.exports = createParser({
 			stringMax: "Author must be at most {expected} characters."
 		}
 	},
-	price: {
+	price: { // check maybe 0 should be allowed for free books
 		type: "number", positive: true, max: 100000,
 		messages: { number: "Price must be a positive number.", numberPositive: "Price must be a positive number." }
 	}

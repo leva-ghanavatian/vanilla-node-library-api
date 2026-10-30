@@ -1,3 +1,15 @@
+// it takes URL query parameters representing filters and converts them into a MongoDB filter object.
+// GET /books?year__gte=2000&year__lt=2020&title__like=java
+// {
+//     year: {
+//         $gte: 2000,
+//         $lt: 2020
+//     },
+//     title: {
+//         $regex: /java/i
+//     }
+// } => handed to something like : const books = await Book.find(filter);
+
 const { v, pick } = require("./validator");
 const { ValidationError } = require("./errors");
 
@@ -7,16 +19,17 @@ const OPS = {
   gt: "$gt", gte: "$gte",
   lt: "$lt", lte: "$lte",
   in: "$in", nin: "$nin",
-  like: "$regex",
+  like: "$regex"
 };
 
-// Reuse body rules, minus constraints that only make sense when writing.
 const WRITE_ONLY = ["min", "max", "pattern", "messages", "default", "positive"];
+
 const stripWrite = rule => {
   const copy = { ...rule };
   WRITE_ONLY.forEach(k => delete copy[k]);
   return copy;
 };
+
 const filterable = (schema, fields, extra = {}) => ({
   ...Object.fromEntries(
     Object.entries(pick(schema, fields)).map(([f, rule]) => [f, stripWrite(rule)])
@@ -25,6 +38,7 @@ const filterable = (schema, fields, extra = {}) => ({
 });
 
 const has = Object.hasOwn;
+
 const MAX_IN = 50;
 const escapeRegex = s => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
