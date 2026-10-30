@@ -19,7 +19,7 @@ module.exports = createResource({
       }
     },
     price: {
-      type: "number", positive: true, max: 100000,
+      type: "number", positive: true,
       messages: { number: "Price must be a positive number.", numberPositive: "Price must be a positive number." }
     }
   },

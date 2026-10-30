@@ -4,11 +4,6 @@ const { ConflictError } = require("../helpers/errors");
 const CASE_INSENSITIVE = { locale: "en", strength: 2 };
 const getCollection = async () => (await DB.getDb()).collection("books");
 
-await books.createIndex(
-    { title: 1, author: 1 },
-    { unique: true, name: "unique_title_author", collation: CASE_INSENSITIVE }
-);
-
 // Turns a Mongo duplicate-key error into a meaningful 409
 const rethrowDuplicate = error => {
     if (error.code === 11000) {
